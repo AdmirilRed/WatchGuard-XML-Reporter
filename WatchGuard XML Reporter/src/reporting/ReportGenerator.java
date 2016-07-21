@@ -126,8 +126,10 @@ public class ReportGenerator {
 
 			Element eElement = (Element) node;
 
-			result+= eElement.getElementsByTagName("officer").item(0).getTextContent()+",";
-                        result+= eElement.getElementsByTagName("vehicle").item(0).getTextContent()+",";
+			if(eElement.getElementsByTagName("officer").getLength()>0)
+                            result+= eElement.getElementsByTagName("officer").item(0).getTextContent()+",";
+                        if(eElement.getElementsByTagName("vehicle").getLength()>0)
+                            result+= eElement.getElementsByTagName("vehicle").item(0).getTextContent()+",";
 		}
             }
             
@@ -139,7 +141,8 @@ public class ReportGenerator {
 
 			Element eElement = (Element) node;
 
-			result+= eElement.getElementsByTagName("eti").item(0).getTextContent();
+			if(eElement.getElementsByTagName("eti").getLength()>0)
+                            result+= eElement.getElementsByTagName("eti").item(0).getTextContent();
 		}
             }
               

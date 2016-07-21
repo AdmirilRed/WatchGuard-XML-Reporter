@@ -1,0 +1,3 @@
+tick13052624-tick13055092.xml,00:00:00:00:09:33-13052610,Nathanial Ward,VHC2-002355,Ctz con Arrest
+tick13055667-tick13056105.xml,00:00:00:00:09:33-13055691,Nathanial Ward,VHC2-002355,TS Citation
+tick326182507-tick326188758.xml,00:1d:96:00:93:f4-326174405,Alex Leal,1715,Call with Arrest

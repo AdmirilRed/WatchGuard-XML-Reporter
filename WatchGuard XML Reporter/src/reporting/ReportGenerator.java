@@ -47,7 +47,7 @@ public class ReportGenerator {
         System.out.println();
         System.out.println(report);
         
-        File dest = new File("WatchGuard XML Report.txt");
+        File dest = new File("WatchGuard CSV Report.txt");
         dest.createNewFile(); //Creates a file in the same location as the executable
         
         try (FileWriter f = new FileWriter(dest)) { 

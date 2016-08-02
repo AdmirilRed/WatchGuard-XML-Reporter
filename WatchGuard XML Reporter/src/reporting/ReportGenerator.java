@@ -85,9 +85,10 @@ public class ReportGenerator {
     //Traverses directories and sub-directories
     private static String traverse(File f) {
         String result = "";
+        System.out.println(f.getName());
         for(File ff:f.listFiles()) { //Loops through all files within the given directory
             if(ff.isDirectory()) //Checks if the given file is a directory
-                traverse(ff); //If the file is a directory, calls method again passing the new directory to search
+                result+=traverse(ff); //If the file is a directory, calls method again passing the new directory to search
             else if(ff.getName().toLowerCase().endsWith(".xml")) //Checks if a given file is XML
                 result+=extract(ff)+"\n"; //If the file is XML, extracts the relevant information and adds it to the result String
         }

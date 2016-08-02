@@ -47,10 +47,11 @@ public class ReportGenerator {
         System.out.println();
         System.out.println(report);
         
-        File dest = new File("WatchGuard CSV Report.txt");
+        File dest = new File("WatchGuard CSV Report.csv");
         dest.createNewFile(); //Creates a file in the same location as the executable
         
-        try (FileWriter f = new FileWriter(dest)) { 
+        try (FileWriter f = new FileWriter(dest)) {
+            f.write("Folder, Start Time, Stop Time, Officer, Vehicle, Category\n"); //Creates the header for the CSV
             f.write(report); //Saves the report to a txt file
             f.flush();
             
@@ -99,7 +100,7 @@ public class ReportGenerator {
     private static String extract(File file) {
         String result = "";
         try {
-            result+=file.getName()+","; //Adds the file name to the result String
+            result+=file.getParentFile().getAbsolutePath()+","; //Adds the parent folder path to the result String
             
             //Converts the File into readable XML for Java
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -107,7 +108,7 @@ public class ReportGenerator {
             Document doc = dBuilder.parse(file);
             doc.getDocumentElement().normalize();
             
-            //Collects the Event ID
+            //Collects the start and stop times for the recording
             NodeList nList = doc.getElementsByTagName("recording-event");
             for(int x=0;x<nList.getLength();x++) {
                 Node node = nList.item(x);
@@ -115,7 +116,8 @@ public class ReportGenerator {
 
 			Element eElement = (Element) node;
 
-			result+= eElement.getAttribute("reid")+",";
+			result+= eElement.getAttribute("start-time")+",";
+                        result+= eElement.getAttribute("stop-time")+",";
 		}
             }
             

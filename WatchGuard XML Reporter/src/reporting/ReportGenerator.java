@@ -8,6 +8,7 @@ package reporting;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Scanner;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -33,6 +34,9 @@ import org.xml.sax.SAXException;
  * 
  */
 public class ReportGenerator {
+    
+    public static long numFiles = 0;
+    public static long fileNum = 0;
 
     /**
      * @param args the command line arguments Command line arguments are NOT supported.
@@ -86,11 +90,14 @@ public class ReportGenerator {
     //Traverses directories and sub-directories
     private static String traverse(File f) {
         String result = "";
-        System.out.println(f.getName());
+        numFiles+=f.listFiles().length;
         for(File ff:f.listFiles()) { //Loops through all files within the given directory
-            if(ff.isDirectory()) //Checks if the given file is a directory
+            fileNum++;
+            if(fileNum%1000==0)
+                System.out.printf("(%d/%d)\n",fileNum,numFiles);
+            if(ff.isDirectory() && Files.isReadable(ff.toPath())) //Checks if the given file is a directory
                 result+=traverse(ff); //If the file is a directory, calls method again passing the new directory to search
-            else if(ff.getName().toLowerCase().endsWith(".xml")) //Checks if a given file is XML
+            else if(ff.getName().toLowerCase().startsWith("tick") && ff.getName().toLowerCase().endsWith(".xml") && Files.isReadable(ff.toPath())) //Checks if a given file is XML
                 result+=extract(ff)+"\n"; //If the file is XML, extracts the relevant information and adds it to the result String
         }
         return result; //Returns the result String which is in CSV format

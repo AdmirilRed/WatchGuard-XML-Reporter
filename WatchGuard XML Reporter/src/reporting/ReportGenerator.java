@@ -5,11 +5,13 @@
  */
 package reporting;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Scanner;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -37,19 +39,34 @@ public class ReportGenerator {
     
     public static long numFiles = 0;
     public static long fileNum = 0;
+    
+    private static ArrayList<File> files = new ArrayList<>();
+    private static UserInterface panel;
 
     /**
      * @param args the command line arguments Command line arguments are NOT supported.
      * @throws java.io.IOException Throws an IOException if there is an issue writing to the destination file.
      * 
      * The main method that controls the report.
+     * @throws java.lang.InterruptedException
      */
-    public static void main(String[] args) throws IOException {
-        File root = getRootFile(); //Asks user for target folder
-        String report = traverse(root); //Goes through each directory and extracts relevant information
+    public static void main(String[] args) throws IOException, InterruptedException {
         
-        System.out.println();
-        System.out.println(report);
+        panel = new UserInterface();
+        panel.setVisible(true);
+        
+        while(!panel.isReady()) {
+            System.out.print(""); //Does nothing
+        }
+        
+        panel.writeln("Searching for files...");
+        
+        File root = panel.getRootFile(); //Asks user for target folder
+        
+        String report = generateReport(root); //Goes through each directory and extracts relevant information
+        
+        panel.writeln("");
+        panel.writeln(report);
         
         File dest = new File("WatchGuard CSV Report.csv");
         dest.createNewFile(); //Creates a file in the same location as the executable
@@ -59,48 +76,43 @@ public class ReportGenerator {
             f.write(report); //Saves the report to a txt file
             f.flush();
             
-            System.out.println("REPORT WRITTEN TO "+dest.getAbsolutePath());
+            panel.writeln("REPORT WRITTEN TO "+dest.getAbsolutePath());
+        }
+        
+        if(JOptionPane.showConfirmDialog(null,
+                "Would you like to open the CSV report?", "Open report?", JOptionPane.YES_NO_OPTION) == 0) {
+            Desktop desktop = Desktop.getDesktop();
+            desktop.open(dest);
+            
         }
         
     }
     
-    //Determines the target directory
-    private static File getRootFile() { 
-        File f = null;
-        try {
-            Scanner kb = new Scanner(System.in); //Keyboard input scanner
-            System.out.print("ROOT FOLDER PATH: ");
-            String path = kb.nextLine().trim(); 
-            f = new File(path); //Attempts to link user input to file
-            
-            if(!f.exists()) { //Checks to see if the specified file exists
-                System.out.println("INVALID PATH\n");
-                return getRootFile(); //Calls method again if file does not exist
-            }
-        }
-        catch(Exception e) { //Catches any errors occurring 
-            System.out.println("AN ERROR OCCURRED WHILE FINDING THE ROOT FILE");
-            System.exit(99); //Exits with error level 99 if something goes wrong
-        }
+    public static String generateReport(File f) {
+        String result = "";
         
-        System.out.println();
-        return f; //Returns the target directory
+        traverse(f);
+        panel.setMaxSize(files.size());
+        panel.writeln(files.size()+" XML records found.");
+        for(File ff:files) {
+            panel.incrementFile();
+            result+=extract(ff)+"\n";    
+        }
+        return result;       
     }
     
     //Traverses directories and sub-directories
-    private static String traverse(File f) {
-        String result = "";
+    private static void traverse(File f) {
         numFiles+=f.listFiles().length;
         for(File ff:f.listFiles()) { //Loops through all files within the given directory
             fileNum++;
-            if(fileNum%1000==0)
-                System.out.printf("(%d/%d)\n",fileNum,numFiles);
+            panel.updateIndeterminate((int) fileNum);
+            
             if(ff.isDirectory() && Files.isReadable(ff.toPath())) //Checks if the given file is a directory
-                result+=traverse(ff); //If the file is a directory, calls method again passing the new directory to search
+                traverse(ff); //If the file is a directory, calls method again passing the new directory to search
             else if(ff.getName().toLowerCase().startsWith("tick") && ff.getName().toLowerCase().endsWith(".xml") && Files.isReadable(ff.toPath())) //Checks if a given file is XML
-                result+=extract(ff)+"\n"; //If the file is XML, extracts the relevant information and adds it to the result String
+                files.add(ff);
         }
-        return result; //Returns the result String which is in CSV format
     }
     
     //Extracts relevant information from an XML file
